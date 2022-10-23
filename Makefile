@@ -7,7 +7,7 @@ RM    := rm -rf
 MKDIR := mkdir -p
 
 # OUTPUT NAME
-BIN := sbc
+BIN := template_program
 
 # DIRECTORIES
 BIN_DIR  := bin
@@ -46,7 +46,7 @@ all: $(BIN_DIR)/$(BIN)
 
 $(BIN_DIR)/$(BIN): $(OBJS)
 	@$(MKDIR) $$(dirname $@)
-	$(LD) $(LDFLAGS) $? -o $@
+	$(LD) $(LDFLAGS) $^ -o $@
 
 $(OBJ_DIR)/%.o: %.c
 	@$(MKDIR) $$(dirname $@)

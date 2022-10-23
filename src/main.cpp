@@ -1,8 +1,10 @@
-#include <iostream>
+#include "app/cfuncs.h"
+#include "app/funcs.hpp"
+
 
 int main(void)
 {
-    for(int i = 0; i < 10; ++i) {
-        std::cout << "Hello world" << "\n"; 
-    }
+    cfuncs_hello();
+    funcs::hello();
+    return 0 * 100;
 }
