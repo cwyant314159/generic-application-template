@@ -14,7 +14,7 @@ convention of fully specifying paths to `#includes`. For example, if you had a
 header called `my_funcs.h` in the directory `include/app/modules/`, the 
 `#include` statement would look like this:
 
-```
+```c
 #include "app/modules/my_funcs.h
 ```
 
