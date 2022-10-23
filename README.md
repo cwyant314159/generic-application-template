@@ -10,7 +10,7 @@ but are rooted under the directory contained in the Make variable `$(OBJ_DIR)`.
 
 For the local include path, the only `-I` option is the `include` directory
 (i.e. `-Iinclude` is the only option passed to gcc). This is done to force the
-convention of fully specifying paths to `#includes. For example, if you had a
+convention of fully specifying paths to `#includes`. For example, if you had a
 header called `my_funcs.h` in the directory `include/app/modules/`, the 
 `#include` statement would look like this:
 
