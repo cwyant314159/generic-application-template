@@ -97,8 +97,9 @@ LDFLAGS += -lstdc++ # commment at the end of a line
 # until this variable is used.
 DUMP_FMT = tr " " "\n" | sed 's/^\(\w\|-\)/    \1/; /^$$/d'
 
-# This is the target that creates the
-# final binary.
+# This is the default target (commonly
+# called all). It in turn triggers the
+# final binary linker target.
 #
 all: $(BIN_DIR)/$(BIN)
 
