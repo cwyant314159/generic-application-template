@@ -1,4 +1,3 @@
-# TOOLS
 CC    := gcc -c -xc
 CXX   := gcc -c -xc++
 LD    := gcc
@@ -89,6 +88,15 @@ LDFLAGS := -Wl,--gc-sections
 LDFLAGS += -lm
 LDFLAGS += -lstdc++ # commment at the end of a line
 
+# This variable is used by the dump
+# target to format the output of Make
+# variables. Notice how it uses the
+# regular equal "=" instead of the
+# colon equal ":=". This is done so
+# that variable expansion is defered
+# until this variable is used.
+DUMP_FMT = tr " " "\n" | sed 's/^\(\w\|-\)/    \1/; /^$$/d'
+
 # This is the target that creates the
 # final binary.
 #
@@ -102,19 +110,63 @@ $(BIN_DIR)/$(BIN): $(OBJS)
 	@$(MKDIR) $$(dirname $@)
 	$(LD) $(LDFLAGS) $^ -o $@
 
-
+# This is the target that compiles all
+# C files into object files under the
+# $(OBJ_DIR).
 $(OBJ_DIR)/%.o: %.c
 	@$(MKDIR) $$(dirname $@)
 	$(CC) $(CFLAGS) -o $@ $<
 
+# This is the target that compiles all
+# C++ files into object files under the
+# $(OBJ_DIR).
 $(OBJ_DIR)/%.o: %.cpp
 	@$(MKDIR) $$(dirname $@)
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
+# This target removes all build files
+# and the final binary.
 .PHONY: clean
 clean:
 	$(RM) $(OBJ_DIR)
 	$(RM) $(BIN_DIR)
 
+# This target is mostly used for
+# debugging. It pretty prints the
+# contents of Make variables.
+.PHONY: dump
+dump:
+	@echo "CC    : $(CC)"
+	@echo "CXX   : $(CXX)"
+	@echo "LD    : $(LD)"
+	@echo "AR    : $(AR)"
+	@echo "RM    : $(RM)"
+	@echo "MKDIR : $(MKDIR)"
+	@echo "BIN   : $(BIN_DIR)/$(BIN)"
+	@echo ""
+	@echo "INC_DIRS:"
+	@echo "$$(echo "$(INC_DIRS)" | $(DUMP_FMT))"
+	@echo ""
+	@echo "SRC_DIRS:"
+	@echo "$$(echo "$(SRC_DIRS)" | $(DUMP_FMT))"
+	@echo ""
+	@echo "SRC_FILES:"
+	@echo "$$(echo "$(SRC_FILES)" | $(DUMP_FMT))"
+	@echo ""
+	@echo "OBJS:"
+	@echo "$$(echo "$(OBJS)" | $(DUMP_FMT))"
+	@echo ""
+	@echo "CFLAGS:"
+	@echo "$$(echo "$(CFLAGS)" | $(DUMP_FMT))"
+	@echo ""
+	@echo "CXXFLAGS:"
+	@echo "$$(echo "$(CXXFLAGS)" | $(DUMP_FMT))"
+	@echo ""
+	@echo "LDFLAGS"
+	@echo "$$(echo "$(LDFLAGS)" | $(DUMP_FMT))"
+
+# Not quite sure how they work but .d
+# (a.k.a dep files) allow rebuilds to
+# happen if header files changes.
 DEPS := $(shell find $(OBJDIR) -name '*.d')
 include $(DEPS)
