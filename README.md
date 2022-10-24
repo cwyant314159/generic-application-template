@@ -15,7 +15,7 @@ header called `my_funcs.h` in the directory `include/app/modules/`, the
 `#include` statement would look like this:
 
 ```c
-#include "app/modules/my_funcs.h
+#include "app/modules/my_funcs.h"
 ```
 
 This is my prefered style, and I think it is a good convention to follow. It
