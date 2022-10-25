@@ -18,7 +18,7 @@ BIN     := template_program
 INC_DIRS :=
 INC_DIRS += include
 
-INC_VARS := $(foreach dir, $(INC_DIRS), $(addprefix -I, $(dir)))
+INC_FLAGS := $(foreach dir, $(INC_DIRS), $(addprefix -I, $(dir)))
 
 # Source directory list and source file
 # list generation. For ease of addition,
@@ -47,8 +47,8 @@ SRC_FILES += $(foreach dir, $(SRC_DIRS), $(shell find $(dir) -type f -name '*.c'
 # own directory.
 OBJ_DIR  := obj
 
-OBJS     := $(filter %.o, $(SRC_FILES:.c=.o) $(SRC_FILES:.cpp=.o))
-OBJS     := $(foreach obj, $(OBJS), $(addprefix $(OBJ_DIR)/, $(obj)))
+OBJS := $(filter %.o, $(SRC_FILES:.c=.o) $(SRC_FILES:.cpp=.o))
+OBJS := $(foreach obj, $(OBJS), $(addprefix $(OBJ_DIR)/, $(obj)))
 
 # Warning flags are applied to both
 # CFLAGS and CXXFLAGS through the
@@ -56,29 +56,30 @@ OBJS     := $(foreach obj, $(OBJS), $(addprefix $(OBJ_DIR)/, $(obj)))
 # warning only applies to one type of
 # compiler, it must be placed in the
 # compiler specific flags variable
-WARNFLAGS :=
-WARNFLAGS += -Wall
-WARNFLAGS += -Wextra
-WARNFLAGS += -Wshadow
+WARN_FLAGS :=
+WARN_FLAGS += -Wall
+WARN_FLAGS += -Wextra
+WARN_FLAGS += -Wshadow
 
 # Common compiler flags are passed to
 # both the CC and CXX compilers.
-COMFLAGS := $(WARNFLAGS)
-COMFLAGS += -ffunction-sections
-COMFLAGS += -fdata-sections
-COMFLAGS += -MMD
-COMFLAGS += -MP
-COMFLAGS += $(INC_VARS)
+COMMON_FLAGS := $(WARN_FLAGS)
+COMMON_FLAGS += -ffunction-sections
+COMMON_FLAGS += -O2
+COMMON_FLAGS += -fdata-sections
+COMMON_FLAGS += -MMD
+COMMON_FLAGS += -MP
+COMMON_FLAGS += $(INC_FLAGS)
 
 # CFLAGS are C compiler specific flags.
 # These flags are NOT passed to CXX
-CFLAGS := $(COMFLAGS)
+CFLAGS := $(COMMON_FLAGS)
 CFLAGS += -std=c99
 
 # CXXFLAGS are C++ compiler specific
 # flags. These flags are not passed to
 # CC.
-CXXFLAGS := $(COMFLAGS)
+CXXFLAGS := $(COMMON_FLAGS)
 CXXFLAGS += -std=c++11
 
 # Linker flags are passed to the
