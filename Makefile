@@ -1,3 +1,4 @@
+# The build tools used in the targets.
 CC    := gcc -c -xc
 CXX   := gcc -c -xc++
 LD    := gcc
@@ -16,6 +17,7 @@ BIN     := template_program
 # with the += assignment.
 INC_DIRS :=
 INC_DIRS += include
+
 INC_VARS := $(foreach dir, $(INC_DIRS), $(addprefix -I, $(dir)))
 
 # Source directory list and source file
@@ -44,6 +46,7 @@ SRC_FILES += $(foreach dir, $(SRC_DIRS), $(shell find $(dir) -type f -name '*.c'
 # file extensions must be placed in their
 # own directory.
 OBJ_DIR  := obj
+
 OBJS     := $(filter %.o, $(SRC_FILES:.c=.o) $(SRC_FILES:.cpp=.o))
 OBJS     := $(foreach obj, $(OBJS), $(addprefix $(OBJ_DIR)/, $(obj)))
 
