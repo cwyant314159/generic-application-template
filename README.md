@@ -3,7 +3,8 @@
 This repos is used as the basis for my C/C++ projects. The template application
 is a valid C/C++ program and can be build by simply running `make`. The template
 application currently targets a desktop environment, but with minimal tweaking,
-it can target embedded devices as well.
+it can target embedded devices as well. The remainder of this README is a
+detailed discussion of the Makefile.
 
 The Makefile is roughly split into two parts. The first part contains the
 variable assignments and source file discovery. All Make targets can be found
@@ -20,6 +21,12 @@ needs to be used on Windows.
 extension to prevent the link step from unnecessarily running.
 
 - Include directories are not recursivley added to `INC_FLAGS`. 
+
+- The linker flags variable (`LDFLAGS`) does not automatically share any flags
+with the compiler flags variables (`WARN_FLAGS`, `COMMON_FLAGS`, `CFLAGS`, and
+`CXXFLAGS`). If a flag needs to be given to both the compiler and linker, it
+must be added to both the appropriate compiler flags variable and linker flags
+variable.
 
 ## Part 1
 
@@ -127,7 +134,7 @@ is blank and all subsequent assignments use the addition assignment operator
 ( `+=` ). The `SRC_FILES` variable is a generated spaces separated list of all
 the C and C++ source files in the directories of `SRC_DIRS`. The list is
 generated using a combination of Make macros and shell commands. Unlike the
-generation of `INC_VARS`, the source file list is made by recursively searching
+generation of `INC_FLAGS`, the source file list is made by recursively searching
 the directories of `SRC_DIRS`. To achieve this, the `foreach` macro is used to
 iterate over the source directories, and the `find` command is used on each
 directory to look for source files.
@@ -173,7 +180,6 @@ equivalent to the following:
 SRC_FILES := src/module1/foo.cpp src/module1/bar.c src/module2/fugazi.c 
 ```
 
-
 ### Object Variables
 
 The `OBJ_DIR` variable is simply the directory where all compiled object files
@@ -200,11 +206,55 @@ the substition would look like this: `objsrc/module/foo.c`.
 
 ### Compiler Flag Variables
 
-<!-- TODO -->
+There are several compiler flag variables that are used in both the compile
+targets and linker target. Several build upon each other, but a couple are
+standalone. The list of compiler flag variables is as follows:
+
+- `WARN_FLAGS`
+- `COMMON_FLAGS`
+- `CFLAGS`
+- `CXXFLAGS`
+- `LDFLAGS`
+
+The `WARN_FLAGS` variable is a space separated list of all the warning flags to
+pass to both the C and C++ compiler. Similar to other variables in this Makefile
+the first assignment is empty so that following assignments can use the addition
+assignment operator ( `+=` ).
+
+`COMMON_FLAGS` is a space separated list of all the compiler flags that are
+passed to both the C and C++ compiler. Unlike other variables in this Makefile
+the first assignment is not empty. The first assignment to `COMMON_FLAGS` is
+the `WARN_FLAGS` variable described above. This is not done for any technical
+reason. It is just done to save an assignment operation. Since these compiler
+flags are given to both compilers the `INC_FLAGS` variable is also used here.
+
+The `CFLAGS` variable is the C compiler specific flags. To save on typing 
+in the Makefile targets, `CFLAGS` is assigned the value of `COMMON_FLAGS`, and
+the addition assignment operator ( `+=` ) is used to add the C compiler specific
+flags.
+
+The `CXXFLAGS` variable is the C++ compiler specific flags. To save on typing 
+in the Makefile targets, `CXXFLAGS` is assigned the value of `COMMON_FLAGS`,
+and the addition assignment operator ( `+=` ) is used to add the C compiler
+specific flags.
+
+`LDFLAGS` contains all the flags that are passed to the linker. To reduce the
+burden on the programmer, the linker flags do not share any flags with the
+compiler. If a flag is required by both the compiler and linker, it must be
+added to both the appropriate compiler flags variable and the linker flags
+variable.
 
 ### Other Variables
 
-<!-- TODO -->
+This section describes any other variables that do not fit into the sections
+above.
+
+The `DUMP_FMT` variable specifies the shell command to call on space separated
+variables in the dump (debug) target. There are two main steps to this shell
+command. Step one is replacing all the spaces with new line characters using
+the `tr` command. Step two uses a two part sed command to (1) add four spaces
+in front of all alphanumeric character or dashes '-' and (2) remove all empty
+lines. The dump (debug) target is described in more detail in part two.
 
 ## Part Two
 
@@ -219,11 +269,7 @@ actual build. The following sections will describe each target in detail.
 
 <!-- TODO -->
 
-### C Compile Target
-
-<!-- TODO -->
-
-### C++ Compile Target
+### Compile Target
 
 <!-- TODO -->
 
