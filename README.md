@@ -28,6 +28,9 @@ the other compiler flags variables (`WARN_FLAGS`, `COMMON_FLAGS`, `CFLAGS`, and
 must be added to both the appropriate compiler flags variable and linker flags
 variable.
 
+- Since the linker is `gcc` and not `g++`, the `-lstdc++` flag must be passed
+to the linker when compiling programs with C++ source.
+
 ## Part 1
 
 The first part of the Makefile contains all the variable assignments for tools,
@@ -241,7 +244,11 @@ specific flags.
 `LDFLAGS` contains all the flags that are passed to the linker. The `LDFLAGS`
 variable does not use the `COMMON_FLAGS` variable. If a flag is required by
 both the compiler and linker, it must be added to both the appropriate compiler
-flags variable and the linker flags variable.
+flags variable and the linker flags variable. Another detail that's easy to
+miss with the setup of this Makefile is that since `gcc -c -xc++` is used as
+the C++, the `-lstdc++` flag must be passed to the linker. If `g++` was used
+as the linker this would not be necessary. To maintain maximum flexibility (i.e.
+compiling a C only program), `gcc` is used as the linker.
 
 ### Other Variables
 
