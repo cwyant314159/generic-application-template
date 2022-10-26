@@ -22,8 +22,8 @@ extension to prevent the link step from unnecessarily running.
 
 - Include directories are not recursivley added to `INC_FLAGS`. 
 
-- The linker flags variable (`LDFLAGS`) does not automatically share any flags
-with the compiler flags variables (`WARN_FLAGS`, `COMMON_FLAGS`, `CFLAGS`, and
+- The linker flags variable (`LDFLAGS`) does not derive its value from an of
+the other compiler flags variables (`WARN_FLAGS`, `COMMON_FLAGS`, `CFLAGS`, and
 `CXXFLAGS`). If a flag needs to be given to both the compiler and linker, it
 must be added to both the appropriate compiler flags variable and linker flags
 variable.
@@ -238,11 +238,10 @@ in the Makefile targets, `CXXFLAGS` is assigned the value of `COMMON_FLAGS`,
 and the addition assignment operator ( `+=` ) is used to add the C++ compiler
 specific flags.
 
-`LDFLAGS` contains all the flags that are passed to the linker. To reduce the
-burden on the programmer, the linker flags do not share any flags with the
-compiler. If a flag is required by both the compiler and linker, it must be
-added to both the appropriate compiler flags variable and the linker flags
-variable.
+`LDFLAGS` contains all the flags that are passed to the linker. The `LDFLAGS`
+variable does not use the `COMMON_FLAGS` variable. If a flag is required by
+both the compiler and linker, it must be added to both the appropriate compiler
+flags variable and the linker flags variable.
 
 ### Other Variables
 
@@ -252,7 +251,7 @@ above.
 The `DUMP_FMT` variable specifies the shell command to call on space separated
 variables in the dump (debug) target. There are two main steps to this shell
 command. Step one is replacing all the spaces with new line characters using
-the `tr` command. Step two uses a two part sed command to (1) add four spaces
+the `tr` command. Step two uses a two part `sed` command to (1) add four spaces
 in front of all alphanumeric character or dashes '-' and (2) remove all empty
 lines. The dump (debug) target is described in more detail in part two.
 
