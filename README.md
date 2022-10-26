@@ -235,7 +235,7 @@ flags.
 
 The `CXXFLAGS` variable is the C++ compiler specific flags. To save on typing 
 in the Makefile targets, `CXXFLAGS` is assigned the value of `COMMON_FLAGS`,
-and the addition assignment operator ( `+=` ) is used to add the C compiler
+and the addition assignment operator ( `+=` ) is used to add the C++ compiler
 specific flags.
 
 `LDFLAGS` contains all the flags that are passed to the linker. To reduce the
