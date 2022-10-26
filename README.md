@@ -121,19 +121,82 @@ modules might have a `hardware_regs.h` header.
 
 ### Source Variables
 
-<!--
-TODO 
-    recursive search
---> 
+`SRC_DIRS` is a space separated list of directories that contain the source
+code of an application. Just like the `INC_DIRS` variable the first assignment
+is blank and all subsequent assignments use the addition assignment operator
+( `+=` ). The `SRC_FILES` variable is a generated spaces separated list of all
+the C and C++ source files in the directories of `SRC_DIRS`. The list is
+generated using a combination of Make macros and shell commands. Unlike the
+generation of `INC_VARS`, the source file list is made by recursively searching
+the directories of `SRC_DIRS`. To achieve this, the `foreach` macro is used to
+iterate over the source directories, and the `find` command is used on each
+directory to look for source files.
+
+```
+$(foreach <loop counter>, <iterable>, <action>)
+$(foreach dir, $(SRC_DIRS), <find source files>)
+```
+
+To call the `find` command, the Make macro shell is used. 
+
+```
+$(shell <command>)
+$(shell find $(dir) -type f -name '*.cpp")
+```
+
+The arguments to the `find` command specify that the object types to search for
+are files (as opposed to files and directories). The name argument specifies a
+wildcard search for anything with a .cpp extension. This particular command
+recursively searches `$(dir)` are returns all C++ files relative to $(dir). To
+find C files, the `-name '\*.cpp'` argument is changed to `-name '\*.c'`.
+
+To better illustrate the output of the `find` command (and by extension the
+`SRC_FILES`), assume the following directory heirarchy:
+
+```
+project
+    include
+    src
+        module1
+            foo.cpp
+            bar.c
+        module2
+            fugazi.c
+    Makefile
+```
+
+The `SRC_DIRS` variable would have the directory `src` assigned to it. After
+running the macros and shell commands, the contents of `SRC_FILES` would be
+equivalent to the following:
+
+```
+SRC_FILES := src/module1/foo.cpp src/module1/bar.c src/module2/fugazi.c 
+```
+
 
 ### Object Variables
 
-<!--
-TODO
-    names are based on src name with extension replaced with o
-    this means that a file names need to be unique regardless of
-    extension
--->
+The `OBJ_DIR` variable is simply the directory where all compiled object files
+will be placed during compilation. The `OBJS` variable contains a space
+separated list of all the compiled object files. The variable is generated in
+two steps.
+
+The first step creates the list of object files from the source files by simply
+appending the `.o` file extension to each item of the `SRC_FILES` variable. The
+second step of the `OBJS` variable generation is simply a `foreach` macro that
+prepends the `OBJ_DIR` to each object file generated from the first step. This
+is accomplished using the same idiom as the `INC_FLAGS` variable.
+
+```
+$(foreach <loop counter>, <iterable>, <action>)
+$(foreach obj, $(OBJS), <prepend -I action>)
+$(addprefix <prefix>, <thing to prepend to>)
+$(addprefix $(OBJ_DIR)/, $(obj))
+```
+
+The `obj` variable is surrounded by `$()` since it is a Make variable in use.
+Also note the `/` added to the `OBJ_DIR` variable. If this slash is left off
+the substition would look like this: `objsrc/module/foo.c`.
 
 ### Compiler Flag Variables
 
