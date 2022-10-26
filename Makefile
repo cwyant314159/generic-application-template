@@ -39,15 +39,9 @@ SRC_FILES += $(foreach dir, $(SRC_DIRS), $(shell find $(dir) -type f -name '*.c'
 # really change. Object files under the
 # $(OBJ_DIR) will mirror the path of
 # source files under the $(SRC_DIRS).
-# This does present the limitation that
-# a C file cannot have the same name and
-# be in the same location as a C++ file.
-# Files with the same name but different
-# file extensions must be placed in their
-# own directory.
 OBJ_DIR  := obj
 
-OBJS := $(filter %.o, $(SRC_FILES:.c=.o) $(SRC_FILES:.cpp=.o))
+OBJS := $(SRC_FILES:=.o)
 OBJS := $(foreach obj, $(OBJS), $(addprefix $(OBJ_DIR)/, $(obj)))
 
 # Warning flags are applied to both
@@ -118,14 +112,14 @@ $(BIN_DIR)/$(BIN): $(OBJS)
 # This is the target that compiles all
 # C files into object files under the
 # $(OBJ_DIR).
-$(OBJ_DIR)/%.o: %.c
+$(OBJ_DIR)/%.c.o: %.c
 	@$(MKDIR) $$(dirname $@)
 	$(CC) $(CFLAGS) -o $@ $<
 
 # This is the target that compiles all
 # C++ files into object files under the
 # $(OBJ_DIR).
-$(OBJ_DIR)/%.o: %.cpp
+$(OBJ_DIR)/%.cpp.o: %.cpp
 	@$(MKDIR) $$(dirname $@)
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
