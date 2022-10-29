@@ -1,31 +1,30 @@
-# Template Project 
+# Template Project
 
 This repos is used as the basis for my C/C++ projects. The template application
-is a valid C/C++ program and can be build by simply running `make`. The template
+is a valid C/C++ program and can be built by simply running `make`. The template
 application currently targets a desktop environment, but with minimal tweaking,
 it can target embedded devices as well. The remainder of this README is a
 detailed discussion of the Makefile.
 
 The Makefile is roughly split into two parts. The first part contains the
-variable assignments and source file discovery. All Make targets can be found
-in the second part. The remainder of this README will describe each part in
-more detail and discuss any quirks or limitations with this template.
+variable assignments and source file discovery. Part two contains the Make
+targets.
 
 ## TL;DR Limitations and Quirks
 
 - The Makefile uses the `MKDIR` variable assuming that the `-p` option or some
-equivalent is present. Heavy modifications will be required if this Makefile 
-needs to be used on Windows.
+equivalent is present. Heavy modifications will be required if this Makefile
+needs to be used on a platform without this feature.
 
 - When compiling on Windows, the `BIN` variable must include the `.exe`
 extension to prevent the link step from unnecessarily running.
 
-- Include directories are not recursivley added to `INC_FLAGS`. 
+- Include directories are not recursivley added to `INC_FLAGS`.
 
-- The linker flags variable (`LDFLAGS`) does not derive its value from an of
-the other compiler flags variables (`WARN_FLAGS`, `COMMON_FLAGS`, `CFLAGS`, and
-`CXXFLAGS`). If a flag needs to be given to both the compiler and linker, it
-must be added to both the appropriate compiler flags variable and linker flags
+- The linker flags variable ( `LDFLAGS` ) does not derive its value from an of
+the other compiler flags variables ( `WARN_FLAGS`, `COMMON_FLAGS`, `CFLAGS`, and
+`CXXFLAGS` ). If a flag needs to be given to both the compiler and linker, it
+must be added to the appropriate compiler flags variable and linker flags
 variable.
 
 - Since the linker is `gcc` and not `g++`, the `-lstdc++` flag must be passed
@@ -36,10 +35,10 @@ to the linker when compiling programs with C++ source.
 The first part of the Makefile contains all the variable assignments for tools,
 source files, compiler flags, and any other variables required by Make targets.
 Most variables are assigned using the colon equals ( `:=` ) which forces
-variable expansion to happen at assignment. There are a few places where
-variables are assigned using equals ( `=` ) for deferred variable expansion.
-These instants are discuessed in later sections. The following sections will go
-over the logical groupings of variables in the Makefile.
+variable expansion to happen at assignment. If a is assigned using equals
+( `=` ) for deferred variable expansion, an explantion will be provided. The
+following sections will go over the logical groupings of variables in the
+Makefile.
 
 ### Tool Variables
 
@@ -64,24 +63,24 @@ the compiler.
 The `LD` variable defines the linker tool used to make the final binary.
 
 The `AR` variable defines the archiver tool that is used to make static library
-files (lib\*.a). Although not used in the compilation of an application it is
+files ( `lib.a` ). Although not used in the compilation of an application it is
 defined here so that it could potentially be passed to sub-Makefiles.
 
-Both `RM` and `MKDIR` define the shell commands to remove files and make
+Both `RM` and `MKDIR` define the shell commands to remove files and create
 directories. The `RM` variable has the `-r` and `-f` flags given since those
 flags are almost always used when removing files in a Makefile. `MKDIR` is
 given the `-p` option to simplify the creation of directories during
 compilation. This Makefile heavily relies on this flag or something equivalent.
-For platforms like Windows, heavy modifications would be required to get this
-exact Makefile to work as intended. A possible solution would be to make a
-script that replicates the functionality of `mkdir -p`.
+For platforms without this feature, heavy modifications would be required to
+get this exact Makefile to work as intended. A possible solution would be to
+make a script that replicates the functionality of `mkdir -p`.
 
 ### Binary Variables
 
 The variables `BIN_DIR` and `BIN` are simply used to define where to put the
 compiled binary and what to call it. When using this Makefile on Windows, the
 `.exe` __MUST__ be added to `BIN` when compiling for desktop applications. If
-the extention is left off, the linking step will always run since compiles on
+the extension is left off, the linking step will always run since compiles on
 Windows will have `.exe` added if it is not present.
 
 ### Include Variables
@@ -102,7 +101,7 @@ to perfrom on each item of the iterable thing.
 
 ```
 $(foreach <loop counter>, <iterable>, <action>)
-$(foreach dir, $(INC_DIRS), <prepend -I action>)
+$(foreach dir, $(INC_DIRS), <prepend action>)
 ```
 To prepend the `-I` argument, the `addprefix` macro is used. The `addprefix`
 macro takes two parameters: a prefix and a thing to add the prefix too.
@@ -134,11 +133,13 @@ modules might have a `hardware_regs.h` header.
 `SRC_DIRS` is a space separated list of directories that contain the source
 code of an application. Just like the `INC_DIRS` variable the first assignment
 is blank and all subsequent assignments use the addition assignment operator
-( `+=` ). The `SRC_FILES` variable is a generated spaces separated list of all
-the C and C++ source files in the directories of `SRC_DIRS`. The list is
-generated using a combination of Make macros and shell commands. Unlike the
-generation of `INC_FLAGS`, the source file list is made by recursively searching
-the directories of `SRC_DIRS`. To achieve this, the `foreach` macro is used to
+( `+=` ).
+
+The `SRC_FILES` variable is a space separated list of all the C and C++ source
+files in the directories of `SRC_DIRS`. The list is generated using a
+combination of Make macros and shell commands. Unlike the generation of
+`INC_FLAGS`, the source file list is made by recursively searching the
+directories of `SRC_DIRS`. To achieve this, the `foreach` macro is used to
 iterate over the source directories, and the `find` command is used on each
 directory to look for source files.
 
@@ -147,7 +148,7 @@ $(foreach <loop counter>, <iterable>, <action>)
 $(foreach dir, $(SRC_DIRS), <find source files>)
 ```
 
-To call the `find` command, the Make macro shell is used. 
+To call the `find` command, the Make macro `shell` is used.
 
 ```
 $(shell <command>)
@@ -156,9 +157,9 @@ $(shell find $(dir) -type f -name '*.cpp")
 
 The arguments to the `find` command specify that the object types to search for
 are files (as opposed to files and directories). The name argument specifies a
-wildcard search for anything with a .cpp extension. This particular command
-recursively searches `$(dir)` are returns all C++ files relative to $(dir). To
-find C files, the `-name '\*.cpp'` argument is changed to `-name '\*.c'`.
+wildcard search for anything with a `.cpp` extension. This particular command
+recursively searches `$(dir)` are returns all C++ files relative to `$(dir)`.
+To find C files, the `-name '\*.cpp'` argument is changed to `-name '\*.c'`.
 
 To better illustrate the output of the `find` command (and by extension the
 `SRC_FILES`), assume the following directory heirarchy:
@@ -180,25 +181,25 @@ running the macros and shell commands, the contents of `SRC_FILES` would be
 equivalent to the following:
 
 ```
-SRC_FILES := src/module1/foo.cpp src/module1/bar.c src/module2/fugazi.c 
+SRC_FILES := src/module1/foo.cpp src/module1/bar.c src/module2/fugazi.c
 ```
 
 ### Object Variables
 
 The `OBJ_DIR` variable is simply the directory where all compiled object files
 will be placed during compilation. The `OBJS` variable contains a space
-separated list of all the compiled object files. The variable is generated in
-two steps.
+separated list of all the compiled object files and is generated in
+a two step process.
 
 The first step creates the list of object files from the source files by simply
 appending the `.o` file extension to each item of the `SRC_FILES` variable. The
-second step of the `OBJS` variable generation is simply a `foreach` macro that
-prepends the `OBJ_DIR` to each object file generated from the first step. This
-is accomplished using the same idiom as the `INC_FLAGS` variable.
+second step is a `foreach` macro that prepends the `OBJ_DIR` to each object
+file generated from the first step. This is accomplished using the same idiom
+as the `INC_FLAGS` variable.
 
 ```
 $(foreach <loop counter>, <iterable>, <action>)
-$(foreach obj, $(OBJS), <prepend -I action>)
+$(foreach obj, $(OBJS), <prepend action>)
 $(addprefix <prefix>, <thing to prepend to>)
 $(addprefix $(OBJ_DIR)/, $(obj))
 ```
@@ -231,12 +232,12 @@ the `WARN_FLAGS` variable described above. This is not done for any technical
 reason. It is just done to save an assignment operation. Since these compiler
 flags are given to both compilers the `INC_FLAGS` variable is also used here.
 
-The `CFLAGS` variable is the C compiler specific flags. To save on typing 
+The `CFLAGS` variable is the C compiler specific flags. To save on typing
 in the Makefile targets, `CFLAGS` is assigned the value of `COMMON_FLAGS`, and
 the addition assignment operator ( `+=` ) is used to add the C compiler specific
 flags.
 
-The `CXXFLAGS` variable is the C++ compiler specific flags. To save on typing 
+The `CXXFLAGS` variable is the C++ compiler specific flags. To save on typing
 in the Makefile targets, `CXXFLAGS` is assigned the value of `COMMON_FLAGS`,
 and the addition assignment operator ( `+=` ) is used to add the C++ compiler
 specific flags.
@@ -256,11 +257,15 @@ This section describes any other variables that do not fit into the sections
 above.
 
 The `DUMP_FMT` variable specifies the shell command to call on space separated
-variables in the dump (debug) target. There are two main steps to this shell
-command. Step one is replacing all the spaces with new line characters using
-the `tr` command. Step two uses a two part `sed` command to (1) add four spaces
-in front of all alphanumeric character or dashes '-' and (2) remove all empty
-lines. The dump (debug) target is described in more detail in part two.
+variables in the `dump` target. There are two main steps to this shell command.
+Step one is replacing all the spaces with new line characters using the `tr`
+command. Step two uses a two part `sed` command to (1) add four spaces in front
+of all alphanumeric character or dashes '-' and (2) remove all empty lines. The
+dump (debug) target is described in more detail in part two.
+
+```
+DUMP_FMT := tr " " "\n" | sed 's/^\(\w\|-\)/    \1/; /^$$/d'
+```
 
 ## Part Two
 
@@ -286,7 +291,7 @@ have been used directly.
 
 ### Compile Target
 
-The compile targets produce compiled object files from the source files 
+The compile targets produce compiled object files from the source files
 specified in the `SRC_FILES` variable. There are two compile targets in this
 Makefile. There is one for C source compiles, and one for C++ source compiles.
 Both targets use wildcard notation for matching object files to source files
@@ -300,24 +305,24 @@ option for the `MKDIR` variable.
 
 ### Clean Target
 
-The `clean` target removes all build generated files. It uses the `RM` variable
-,and it assumes that the recursive ( `-r` ) and force ( `-f` ) flags are
+The `clean` target removes all build generated files. It uses the `RM` variable,
+and it assumes that the recursive ( `-r` ) and force ( `-f` ) flags are
 already specified in the variable. This target has no dependencies.
 
 ### Dump Target
 
 The `dump` target is mostly used for debugging the Makefile. It is a `.PHONY`
 target (does not produce an output file). It's purpose is to output the
-contents of the variable in the Makefile. This target utilizes the `DUMP_FMT`
+contents of the variables in the Makefile. This target utilizes the `DUMP_FMT`
 variable described in part one.
 
 ## Dep (.d) Files
 
 The final few lines of the Makefile deal with what are called dep files. Since
-make targets are reran based on changes to dependent files, modifications to
+make targets are re-ran based on changes to dependent files, modifications to
 header files are usually ignored. No targets in the Makefile have stated
 dependencies on header files. Dep files are created after compilation and
 describe the header file dependencies of an object file. The contents of dep
-files are make targets that show the header file dependencies of a given object
+files are Make targets that show the header file dependencies of a given object
 file. Dep files are generated in this Makefile with the `-MMD` compiler option. This
 option will produce a `.d` with the same file name as the `.o` output file.

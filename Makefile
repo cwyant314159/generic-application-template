@@ -93,7 +93,7 @@ LDFLAGS += -lstdc++ # commment at the end of a line
 # colon equal ":=". This is done so
 # that variable expansion is defered
 # until this variable is used.
-DUMP_FMT = tr " " "\n" | sed 's/^\(\w\|-\)/    \1/; /^$$/d'
+DUMP_FMT := tr " " "\n" | sed 's/^\(\w\|-\)/    \1/; /^$$/d'
 
 # This is the default target (commonly
 # called all). It in turn triggers the
