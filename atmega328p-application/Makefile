@@ -125,7 +125,6 @@ LDFLAGS += -Wl,--gc-sections
 #LDFLAGS += -Wl,--no-warn-rwx-segments
 LDFLAGS += -Wl,--start-group
 LDFLAGS += -lm
-LDFLAGS += -lstdc++
 LDFLAGS += -Wl,--end-group
 
 # This variable is used by the dump
@@ -221,5 +220,5 @@ dump:
 # Not quite sure how they work but .d
 # (a.k.a dep files) allow rebuilds to
 # happen if header files changes.
-DEPS := $(shell find $(OBJ_DIR) -name '*.d')
+DEPS := $(shell find . -name '*.d')
 include $(DEPS)
