@@ -1,5 +1,5 @@
 # The build tools used in the targets.
-TOOL_PREFIX := arm-none-eabi-
+TOOL_PREFIX := avr-
 CC      := $(TOOL_PREFIX)gcc -c -xc
 CXX     := $(TOOL_PREFIX)gcc -c -xc++
 LD      := $(TOOL_PREFIX)gcc
@@ -17,12 +17,7 @@ ELF      := $(BIN_NAME).elf
 HEX      := $(BIN_NAME).hex
 
 # The application's linker script
-LDSCRIPT := app/linker/STM32F103C8TX_FLASH.ld
-
-# To switch to the version of the application
-# using the STM32 HAL, set this variable to
-# true on the command line when calling Make.
-USE_HAL ?= 0
+LDSCRIPT := app/linker/avr.ld
 
 # Include directories and compiler
 # include (-I) argument creation. For
@@ -31,13 +26,6 @@ USE_HAL ?= 0
 # with the += assignment.
 INC_DIRS :=
 INC_DIRS += app/include
-INC_DIRS += dependencies/STM32CubeF1/Drivers/CMSIS/Include
-INC_DIRS += dependencies/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Include
-
-ifeq ($(USE_HAL), 1)
-INC_DIRS += dependencies/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc
-INC_DIRS += dependencies/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy
-endif
 
 INC_FLAGS := $(foreach dir, $(INC_DIRS), $(addprefix -I, $(dir)))
 
@@ -50,10 +38,6 @@ INC_FLAGS := $(foreach dir, $(INC_DIRS), $(addprefix -I, $(dir)))
 # files.
 SRC_DIRS :=
 SRC_DIRS += app/src
-
-ifeq ($(USE_HAL), 1)
-SRC_DIRS += dependencies/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src
-endif
 
 SRC_FILES :=
 SRC_FILES += $(foreach dir, $(SRC_DIRS), $(shell find $(dir) -type f -name '*.cpp'))
@@ -73,12 +57,10 @@ OBJS := $(foreach obj, $(OBJS), $(addprefix $(OBJ_DIR)/, $(obj)))
 # Common flags are passed to both the C and C++ compiler as well as the
 # assembler.
 COMMON_FLAGS :=
-COMMON_FLAGS += -mcpu=cortex-m3
+COMMON_FLAGS += -mmcu=atmega328p
 COMMON_FLAGS += -MMD
 COMMON_FLAGS += -MP
 COMMON_FLAGS += -g
-COMMON_FLAGS += -mthumb
-COMMON_FLAGS += -mfloat-abi=soft
 
 # Warning flags are applied to both
 # CFLAGS and CXXFLAGS through the
@@ -102,15 +84,11 @@ COMPILE_FLAGS += -fstack-usage
 COMPILE_FLAGS += -ffunction-sections
 COMPILE_FLAGS += -fdata-sections
 COMPILE_FLAGS += -fno-common
-COMPILE_FLAGS += -DSTM32F103xB
+COMPILE_FLAGS += -DF_CPU=16000000
 COMPILE_FLAGS += -O0
 COMPILE_FLAGS += -MMD
 COMPILE_FLAGS += -MP
 COMPILE_FLAGS += $(INC_FLAGS)
-
-ifeq ($(USE_HAL), 1)
-COMPILE_FLAGS += -DUSE_HAL_DRIVER
-endif
 
 # CFLAGS are C compiler specific flags.
 # These flags are NOT passed to CXX
@@ -140,16 +118,11 @@ ASFLAGS := $(COMMON_FLAGS)
 # passed to the linker. If shared
 # options are required, they must be
 # explicitly listed.
-LDFLAGS := -mcpu=cortex-m3
-LDFLAGS += -mthumb
-LDFLAGS += -mfloat-abi=soft
 LDFLAGS += -T$(LDSCRIPT)
 LDFLAGS += -Wl,-Map="$(BIN_DIR)/$(BIN_NAME).map"
 LDFLAGS += -static
-LDFLAGS += --specs=nosys.specs
-LDFLAGS += --specs=nano.specs
 LDFLAGS += -Wl,--gc-sections
-LDFLAGS += -Wl,--no-warn-rwx-segments
+#LDFLAGS += -Wl,--no-warn-rwx-segments
 LDFLAGS += -Wl,--start-group
 LDFLAGS += -lm
 LDFLAGS += -lstdc++
@@ -169,6 +142,8 @@ DUMP_FMT := tr " " "\n" | sed 's/^\(\w\|-\)/    \1/; /^$$/d'
 # final binary linker target.
 #
 all: $(BIN_DIR)/$(ELF)
+
+# TODO generate hex file and other output files
 
 # This is the linker target that uses
 # all of the compiled OBJS files and
