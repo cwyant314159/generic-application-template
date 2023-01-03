@@ -1,16 +1,19 @@
 #!/bin/bash
 #
 
-programmer="${STM32CUBEPROGRAMMER_ROOT}/bin/STM32_Programmer_CLI"
+# The programmer utility. This is only here if the tools is not on your path.
+PROGRAMMER="avrdude"
 
-[[ -f $programmer ]] || {
-    echo "Cannot find $(basename $programmer) at $(dirname $programmer)"
-    exit 1
-}
+# Use the Atmel ICE programmer to target a 328P controller. Add a little extra
+# verbosity for good measure.
+AVRDFLAGS="-c atmelice_isp -p m328p -v -v "
 
 [[ -f $1 ]] || {
     echo "Cannot find file $1"
     exit 1
 }
 
-$programmer -c port=swd -w $1 -rst
+# Write and verify an Intel hex file to flash 
+AVRDFLAGS="${AVRDFLAGS} -U flash:w:$1:i"
+
+$PROGRAMMER $AVRDFLAGS

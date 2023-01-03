@@ -7,8 +7,20 @@ AS      := $(TOOL_PREFIX)gcc -c -xassembler-with-cpp
 AR      := $(TOOL_PREFIX)ar
 OBJCOPY := $(TOOL_PREFIX)objcopy
 OBJDUMP := $(TOOL_PREFIX)objdump
+SIZE    := $(TOOL_PREFIX)size
+NM      := $(TOOL_PREFIX)nm
 RM      := rm -rf
 MKDIR   := mkdir -p
+
+# The programmer utility used to flash
+# and verify the microcontroller.
+PROGRAMMER := avrdude
+
+# Highly specific programmer utility
+# flags. These flags are specific to the
+# Atmel ICE programmer and ATmega328p
+# microcontroller.
+PROG_FLAGS := -c atmelice_isp -p m328p
 
 # The output binary directory and name.
 BIN_DIR  := bin
@@ -84,6 +96,7 @@ COMPILE_FLAGS += -fstack-usage
 COMPILE_FLAGS += -ffunction-sections
 COMPILE_FLAGS += -fdata-sections
 COMPILE_FLAGS += -fno-common
+COMPILE_FLAGS += -fsigned-char
 COMPILE_FLAGS += -DF_CPU=16000000
 COMPILE_FLAGS += -O0
 COMPILE_FLAGS += -MMD
@@ -122,7 +135,6 @@ LDFLAGS += -T$(LDSCRIPT)
 LDFLAGS += -Wl,-Map="$(BIN_DIR)/$(BIN_NAME).map"
 LDFLAGS += -static
 LDFLAGS += -Wl,--gc-sections
-#LDFLAGS += -Wl,--no-warn-rwx-segments
 LDFLAGS += -Wl,--start-group
 LDFLAGS += -lm
 LDFLAGS += -Wl,--end-group
@@ -138,11 +150,18 @@ DUMP_FMT := tr " " "\n" | sed 's/^\(\w\|-\)/    \1/; /^$$/d'
 
 # This is the default target (commonly
 # called all). It in turn triggers the
-# final binary linker target.
+# final binary hex file target.
 #
-all: $(BIN_DIR)/$(ELF)
+all: $(BIN_DIR)/$(HEX)
 
-# TODO generate hex file and other output files
+# Objcopy the elf file into an Intel hex
+# file. Various other output files are also
+# generated for debug and inspection.
+$(BIN_DIR)/$(HEX): $(BIN_DIR)/$(ELF)
+	$(OBJCOPY) -O ihex $< $@
+	$(OBJDUMP) --disassemble $< > $(BIN_DIR)/$(BIN_NAME).lss
+	$(SIZE) -A -t $< > $(BIN_DIR)/$(BIN_NAME).size.txt
+	$(NM) --numeric-sort --print-size $< | $(TOOL_PREFIX)c++filt > $(BIN_DIR)/$(BIN_NAME).names.txt
 
 # This is the linker target that uses
 # all of the compiled OBJS files and
@@ -173,8 +192,19 @@ $(OBJ_DIR)/%.cpp.o: %.cpp
 # This target downloads the elf file to
 # board using the helper script.
 .PHONY: flash
-flash: $(BIN_DIR)/$(ELF)
+flash: $(BIN_DIR)/$(HEX)
 	@./scripts/flash.sh $<
+
+# Verify the contents of the controller's
+# flash memory.
+.PHONY: verify
+verify: $(BIN_DIR)/$(HEX)
+	$(PROGRAMMER) $(PROG_FLAGS) -U flash:v:$<:i
+
+# Perform a chip erase on the controller.
+.PHONY: erase
+erase:
+	$(PROGRAMMER) $(PROG_FLAGS) -e
 
 # This target removes all build files
 # and the final binary.
@@ -188,13 +218,19 @@ clean:
 # contents of Make variables.
 .PHONY: dump
 dump:
-	@echo "CC    : $(CC)"
-	@echo "CXX   : $(CXX)"
-	@echo "LD    : $(LD)"
-	@echo "AR    : $(AR)"
-	@echo "RM    : $(RM)"
-	@echo "MKDIR : $(MKDIR)"
-	@echo "BIN   : $(BIN_DIR)/$(BIN)"
+	@echo "CC        : $(CC)"
+	@echo "CXX       : $(CXX)"
+	@echo "LD        : $(LD)"
+	@echo "AS        : $(AS)"
+	@echo "AR        : $(AR)"
+	@echo "RM        : $(RM)"
+	@echo "MKDIR     : $(MKDIR)"
+	@echo "ELF       : $(ELF)"
+	@echo "HEX       : $(HEX)"
+	@echo "PROGRAMMER: $(PROGRAMMER)"
+	@echo ""
+	@echo "PROG_FLAGS:"
+	@echo "$$(echo "$(PROG_FLAGS)" | $(DUMP_FMT))"
 	@echo ""
 	@echo "INC_DIRS:"
 	@echo "$$(echo "$(INC_DIRS)" | $(DUMP_FMT))"
